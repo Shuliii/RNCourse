@@ -1,44 +1,83 @@
 import { useState } from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  Button,
-  TextInput,
-  ScrollView,
-} from "react-native";
+import { StyleSheet, View, Button, FlatList } from "react-native";
+import { StatusBar } from "expo-status-bar";
+
+import GoalItem from "./components/GoalItem";
+import GoalInput from "./components/GoalInput";
 
 export default function App() {
+  const [modalIsVisible, setModalIsVisible] = useState(false);
   const [enteredGoalText, setEnteredGoalText] = useState("");
   const [courseGoals, setCourseGoals] = useState([]);
   const goalInputHandler = (enteredText) => {
     setEnteredGoalText(enteredText);
   };
 
+  function startAddGoalHandler() {
+    setModalIsVisible(true);
+  }
+
+  function endAddGoalHandler() {
+    setModalIsVisible(false);
+  }
+
   const addGoalHandler = () => {
-    setCourseGoals((prev) => [...prev, enteredGoalText]);
+    setCourseGoals((prev) => [
+      ...prev,
+      {
+        text: enteredGoalText,
+        id: Math.random().toString(),
+      },
+    ]);
+    setEnteredGoalText("");
+    endAddGoalHandler();
   };
+
+  const deleteGoalHandler = (id) => {
+    setCourseGoals((prev) => {
+      return prev.filter((item) => item.id !== id);
+    });
+  };
+
   return (
-    <View style={styles.appContainer}>
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.textInput}
-          placeholder="Your course goal!"
-          onChangeText={goalInputHandler}
+    <>
+      <StatusBar style="light" />
+      <View style={styles.appContainer}>
+        <Button
+          title="Add New Goal"
+          color="#5e0acc"
+          onPress={startAddGoalHandler}
         />
-        <Button title="Add Goal" onPress={addGoalHandler} />
+
+        <GoalInput
+          goalInputHandler={goalInputHandler}
+          addGoalHandler={addGoalHandler}
+          value={enteredGoalText}
+          modalIsVisible={modalIsVisible}
+          endAddGoalHandler={endAddGoalHandler}
+        />
+
+        <View style={styles.goalsContainer}>
+          <FlatList
+            data={courseGoals}
+            renderItem={(itemData) => {
+              return (
+                <GoalItem
+                  data={itemData}
+                  deleteGoalHandler={deleteGoalHandler}
+                />
+              );
+            }}
+            keyExtractor={(item, index) => {
+              return item.id;
+            }}
+            alwaysBounceVertical={false}
+          >
+            {/* <Text>List of goals...</Text> */}
+          </FlatList>
+        </View>
       </View>
-      <View style={styles.goalsContainer}>
-        <ScrollView>
-          {/* <Text>List of goals...</Text> */}
-          {courseGoals.map((item) => (
-            <View key={Math.random()} style={styles.goalItem}>
-              <Text style={styles.goalItemText}>{item}</Text>
-            </View>
-          ))}
-        </ScrollView>
-      </View>
-    </View>
+    </>
   );
 }
 
@@ -48,33 +87,33 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     paddingHorizontal: 16,
   },
-  inputContainer: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 24,
-    borderBottomWidth: 1,
-    borderColor: "#ccc",
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    width: "70%",
-    marginRight: 8,
-    padding: 8,
-  },
+  // inputContainer: {
+  //   flex: 1,
+  //   flexDirection: "row",
+  //   justifyContent: "space-between",
+  //   alignItems: "center",
+  //   marginBottom: 24,
+  //   borderBottomWidth: 1,
+  //   borderColor: "#ccc",
+  // },
+  // textInput: {
+  //   borderWidth: 1,
+  //   borderColor: "#ccc",
+  //   width: "70%",
+  //   marginRight: 8,
+  //   padding: 8,
+  // },
   goalsContainer: {
     flex: 5,
     // gap: 8,
   },
-  goalItem: {
-    margin: 8,
-    borderRadius: 6,
-    backgroundColor: "#5e0acc",
-    padding: 8,
-  },
-  goalItemText: {
-    color: "white",
-  },
+  // goalItem: {
+  //   margin: 8,
+  //   borderRadius: 6,
+  //   backgroundColor: "#5e0acc",
+  //   padding: 8,
+  // },
+  // goalItemText: {
+  //   color: "white",
+  // },
 });
